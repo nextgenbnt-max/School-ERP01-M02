@@ -1,0 +1,133 @@
+{
+  "theme_and_archetype": {
+    "theme": "light",
+    "archetype": "Soft Utility / High-Contrast Dashboard (Archetype 4 blend)",
+    "description": "A modern, professional admin dashboard for a school ERP. Needs to balance high data density (fintech style) with approachability (education). Uses clean lines, crisp typography, and high contrast for legibility.",
+    "emotional_tone": "Authoritative, organized, clean, approachable"
+  },
+  "typography": {
+    "strategy": "Soft Utility Pairing",
+    "fonts": {
+      "headings": {
+        "family": "Cabinet Grotesk, sans-serif",
+        "weight": "font-bold to font-black",
+        "description": "Used for page titles, KPI numbers, and major section headers."
+      },
+      "body": {
+        "family": "IBM Plex Sans, sans-serif",
+        "weight": "font-normal to font-medium",
+        "description": "Crisp and legible for data tables, forms, and general UI text."
+      }
+    },
+    "hierarchy": {
+      "h1": "text-3xl sm:text-4xl tracking-tight",
+      "h2": "text-2xl sm:text-3xl tracking-tight",
+      "h3": "text-xl font-semibold tracking-tight",
+      "h4": "text-lg font-semibold",
+      "body": "text-sm sm:text-base leading-relaxed",
+      "small_labels": "text-xs uppercase tracking-widest font-medium"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#4F46E5",
+        "hover": "#4338CA",
+        "foreground": "#FFFFFF",
+        "description": "Indigo-600. Professional, trustworthy, slightly vibrant for primary actions."
+      },
+      "background": {
+        "DEFAULT": "#F8FAFC",
+        "surface": "#FFFFFF",
+        "description": "Slate-50 for app background, pure White for cards/surfaces."
+      },
+      "neutral": {
+        "text_main": "#0F172A",
+        "text_muted": "#64748B",
+        "border": "#E2E8F0",
+        "description": "Slate-900 for primary text, Slate-500 for muted."
+      },
+      "status": {
+        "success": "#10B981",
+        "success_bg": "#D1FAE5",
+        "warning": "#F59E0B",
+        "warning_bg": "#FEF3C7",
+        "danger": "#EF4444",
+        "danger_bg": "#FEE2E2",
+        "info": "#3B82F6",
+        "info_bg": "#DBEAFE"
+      }
+    }
+  },
+  "spacing_and_layout": {
+    "strategy": "Control Room Grid",
+    "sidebar": "w-64 fixed h-full bg-white border-r border-slate-200 z-40. Use flex-col, space-y-1 for nav items. Active state: bg-indigo-50 text-indigo-700 font-medium.",
+    "main_content": "ml-64 p-6 sm:p-8 min-h-screen bg-slate-50",
+    "dashboard_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+    "kpi_cards": "col-span-1 p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow",
+    "chart_containers": "col-span-2 lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm",
+    "lists_and_tables": "col-span-full xl:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+  },
+  "component_patterns": {
+    "cards": {
+      "style": "Flat with 1px border (#E2E8F0), soft shadow (shadow-sm), rounded-xl. Hover state adds slight lift (-translate-y-0.5) and shadow-md."
+    },
+    "buttons": {
+      "primary": "bg-indigo-600 text-white rounded-lg px-4 py-2 font-medium hover:bg-indigo-700 transition-colors shadow-sm",
+      "secondary": "bg-white text-slate-700 border border-slate-300 rounded-lg px-4 py-2 font-medium hover:bg-slate-50 transition-colors shadow-sm",
+      "destructive": "bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-600 transition-colors shadow-sm"
+    },
+    "inputs": {
+      "style": "rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+    },
+    "status_badges": {
+      "style": "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+      "paid_present": "bg-emerald-100 text-emerald-800",
+      "unpaid_absent": "bg-red-100 text-red-800",
+      "pending_leave": "bg-amber-100 text-amber-800"
+    },
+    "tables": {
+      "header": "bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold border-b border-slate-200 px-6 py-3",
+      "rows": "bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors text-sm text-slate-700 px-6 py-4"
+    }
+  },
+  "media": {
+    "login_background": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/2cc00928-cb3f-41d8-ad15-0a128cb4c443/images/cff8753364e1280eae17f8fa4fb031627663f77b89762344ce8617e1815bbc94.png",
+      "description": "Abstract 3D geometric background in soft blue and white for the auth/login screen.",
+      "category": "background"
+    },
+    "empty_state_icon": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/2cc00928-cb3f-41d8-ad15-0a128cb4c443/images/b290d281bc4d0b5cf09a510663d4b4b34e0812ea0f78d873fa7072e30a0a8fd8.png",
+      "description": "3D academic graduation cap for empty states (no students, no classes, etc.).",
+      "category": "illustration"
+    },
+    "student_avatar_placeholder": {
+      "url": "https://images.unsplash.com/photo-1543689604-6fe8dbcd1f59?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGRpdmVyc2UlMjBzdHVkZW50cyUyMHBvcnRyYWl0fGVufDB8fHx8MTc3ODUwMTk1OXww&ixlib=rb-4.1.0&q=85",
+      "description": "Placeholder avatar for student profiles.",
+      "category": "avatar"
+    },
+    "school_exterior": {
+      "url": "https://images.unsplash.com/photo-1730106469498-a916bbf203e7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBzY2hvb2wlMjBidWlsZGluZyUyMGFyY2hpdGVjdHVyZXxlbnwwfHx8fDE3Nzg1MDE5NTl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Modern school building for dashboard welcome card or institute profile.",
+      "category": "photo"
+    }
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure all text meets WCAG AA 4.5:1 ratio minimum.",
+    "focus_states": "All interactive elements must have focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2.",
+    "testing_attributes": "CRITICAL: Add data-testid attributes to ALL interactive and key informational elements. Use kebab-case, role-based naming (e.g., data-testid='student-save-button', data-testid='kpi-total-students-value')."
+  },
+  "instructions_to_main_agent": [
+    "1. Initialize the project with React, Tailwind CSS, and Shadcn UI. Choose javascript for the project (.js files).",
+    "2. Configure Tailwind with the color palette (Indigo/Slate) and fonts (Cabinet Grotesk / IBM Plex Sans). Note: Include these fonts in index.html via Google Fonts or Fontshare.",
+    "3. Build the primary Layout component: A fixed 64 (w-64) sidebar on the left and main content area on the right.",
+    "4. For KPI Cards (Total Students, Teachers, Fees, Attendance), use the 'Control Room' grid layout.",
+    "5. For data tables (Students, Employees, Fees), use a clean, border-collapse style with text-xs uppercase headers and soft row hovers.",
+    "6. Do NOT use standard Shadcn card styles blindly; customize them to be rounded-xl with shadow-sm and 1px border-slate-200 to match the Soft Utility theme.",
+    "7. Implement all the forms (Add Student, Add Class, Settings) using Shadcn Form/Input/Select components, keeping them dense and professional.",
+    "8. Use Phosphor Icons (@phosphor-icons/react) or Lucide (lucide-react) for consistent dashboard iconography.",
+    "9. CRITICAL: Inject data-testid on every button, link, form input, and table row for automated testing.",
+    "10. Only use images provided in the 'media' object for placeholders and backgrounds. No generic dummy images."
+  ]
+}
