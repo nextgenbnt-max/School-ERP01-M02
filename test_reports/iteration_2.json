@@ -1,0 +1,39 @@
+{
+  "summary": "Phase 2 Batch A regression of School Management System: Salary, Accounts, Homework, Promote, PDF exports. Backend pytest 22/22 PASS in 4.5s (TestSalary 6, TestAccounts 3, TestTransactions 4, TestHomework 4, TestPromote 2, TestPDF 3). Frontend Playwright e2e PASS: admin login → sidebar shows nav-salary/nav-accounts/nav-homework → /salary renders 3 KPI cards + 10 seeded slip rows + Generate button + Mark-paid dialog → /accounts renders 3 KPI cards + 3 tabs + 8 seeded accounts (chart tab) + Add income/expense dialogs → /homework renders 3 seeded cards + class filter + Assign dialog → /students Promote dialog opens with from/to selects + 20 admission-letter PDF icons → /fees 20 invoice PDF download icons. Confirmed paying a salary slip auto-creates an EXP-SAL expense transaction (txn count +1 after pay, type=expense, amount=net_amount, reference=slip_id). PDF endpoints return application/pdf bytes starting with %PDF.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dialogs (salary-pay, txn, homework, promote)", "issues": ["Radix Dialog missing Description / aria-describedby — minor a11y warning, non-blocking. Add <DialogDescription> inside DialogContent or set aria-describedby={undefined}."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase2.py",
+    "/app/test_reports/pytest/phase2_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py now 1562 lines — already flagged in iteration_1. Strongly recommend splitting into routers/ per feature (salary.py, accounts.py, homework.py, pdfs.py) before adding Batch B/C.",
+    "PUT /api/accounts/{account_id} does not validate type value (only POST does). Sending type='bogus' on PUT would silently persist an invalid type. Add the same type-whitelist check used in POST.",
+    "POST /api/salary/slips/bulk-generate?month=&year= has no range validation on month (1..12) or year — passing month=99 succeeds and produces nonsensical slips.",
+    "POST /api/salary/slips/{id}/pay does not check current status — paying an already-paid slip will create a duplicate EXP-SAL expense transaction. Add `if slip['status']=='paid': raise 400`.",
+    "POST /api/students/promote with student_ids=None silently moves ALL students of from_class. UI should confirm or pass explicit IDs; backend could log how many moved (return {moved: n}) for traceability.",
+    "DELETE /api/homework allows any teacher to delete any homework (not only their own). Consider scoping to created_by==user.id for teachers.",
+    "PDF endpoints (slip.pdf, admission-letter.pdf) are not rate-limited and load full institute+student records each call — acceptable for now but consider streaming/cache if used heavily.",
+    "Several Radix DialogContent instances missing aria-describedby — minor a11y."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2.py (created — 22 tests)"
+  ],
+  "success_rate": {"backend": "100% (22/22)", "frontend": "100% (Salary/Accounts/Homework/Promote/Fees PDF flows)"},
+  "test_credentials": "admin@school.com/admin123, teacher@school.com/teacher123 (loaded from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Backend auto-seeds chart of accounts, sample transactions, salary slips for current month, and 3 homework rows. Test run created TEST-prefixed account + a transient salary 2099-07 bulk slip + 2099-03-15 cash txn; salary-pay flipped one previously-pending July 2026 slip to paid (this state persists — main agent may want to reseed if regression coverage repeats). Promote test moved-and-reverted one student.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Reuse /app/backend/tests/test_phase2.py and /app/backend/tests/backend_test.py for full regression. Salary pay endpoint is NOT idempotent — re-running test_pay_creates_expense_txn will keep creating new EXP-SAL transactions (one per pending slip available). Bulk-generate uses query params (?month=&year=), not JSON body. /api/accounts/statement supports optional account_id. PDF endpoints return raw bytes (use r.content[:4]==b'%PDF').",
+  "rca of the issue": "N/A — no failing tests in Phase 2 Batch A."
+}

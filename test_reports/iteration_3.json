@@ -1,0 +1,48 @@
+{
+  "summary": "Phase 2 Batch B regression: Timetable, Exams (+subjects/results/marksheet), Question Papers (+PDF), Student/Employee document PDFs (id-card, certificate types, job-letter), Parent Portal (self-register, link-child, summary). Backend pytest 23/23 PASS in 6.3s. Frontend Playwright E2E PASS: admin sidebar shows nav-timetable/nav-exams/nav-qp; /timetable renders full 5d x 6p grid for Grade 1 with subject+teacher+room per cell; Configure dialog opens; /exams lists seeded Mid-Term Examination (Grade 1, 5 subjects) with Subjects/Enter marks tabs; /question-papers shows Sample Mid-Term Paper card with download/edit/delete; /students has docs dropdown w/ Admission/ID card/Character/Transfer/Completion; /employees has Job letter/Staff ID; parent@school.com login lands on Parent Portal layout (no admin sidebar) with 2 child chips (Aarav Sharma GW20251001, Saanvi Iyer GW20251002), 3 KPI cards (attendance 0%, fees $0 outstanding/$4300 paid, 1 upcoming homework), Fee invoices list, Upcoming homework list, Link a child button. PDF endpoints return application/pdf and body starts with %PDF.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/exams", "issue": "Spec describes 'exam_date'/'exam_type' but model requires 'start_date' & 'end_date'. Not a runtime bug — just doc/spec mismatch. Tests adapted to actual contract."},
+      {"endpoint": "DELETE /api/exams/{id}", "issue": "Only admin can delete exams (line 1334) although teachers can create them — leaves teacher-created exams un-cleanable by teachers. Consider allowing creator-teacher to delete their own exam or auto-delete TEST exams."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Parent Portal", "issues": ["No data-testid attributes on parent-portal root, child chips, KPI cards, link-child button, fee/homework lists — hampers automated testing (only functional check possible). Suggested: parent-portal, parent-child-chip-{id}, parent-kpi-{attendance|fees|homework}, parent-link-child-btn, parent-fee-row-{id}, parent-hw-row-{id}."]},
+      {"screen": "Dialogs (timetable configure, exam edit, qp create)", "issues": ["Radix DialogContent still missing aria-describedby — same minor a11y warning as iteration_2. Add <DialogDescription> or aria-describedby={undefined}."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase2b.py",
+    "/app/test_reports/pytest/phase2b_results.xml"
+  ],
+  "action_items": [
+    "Add data-testid attributes on /parent-portal components (chips, KPI cards, link-child button, fee/homework rows) for future automated coverage.",
+    "Decide whether teacher (creator) should be allowed to delete their own exam; today only admin can — teacher exam-create test leaves dangling rows.",
+    "Update API doc/spec for POST /api/exams to reflect real fields (start_date/end_date) and POST /api/exams/{id}/subjects (exam_date required).",
+    "Address Radix Dialog aria-describedby warnings across new dialogs (a11y)."
+  ],
+  "critical_code_review_comments": [
+    "server.py now 2244 lines (was 1562 in iter2). Splitting into routers/ per feature (timetable.py, exams.py, qp.py, pdfs.py, parent.py) is overdue — single-file complexity is hurting maintainability.",
+    "POST /api/exams accepts arbitrary start_date/end_date strings (no date format validation). Pydantic str field allows '2099-99-99' silently — add date validators or use date type.",
+    "/api/exams/{id}/marksheet recomputes grade per row by iterating institute.grading_scale on each subject — fine for small data, but inefficient if subjects scale. Cache scale once per request.",
+    "/api/parent/link-child uses linked_student_ids list on user doc — no upper bound. Consider a max (e.g., 20) and idempotent re-link (today re-linking same reg likely appends duplicate — tests didn't probe duplicate insert).",
+    "Self-register endpoint hardcodes role==parent check but still accepts any password length ≥ 1 char (no min-length enforced in RegisterIn). Add Field(min_length=8).",
+    "PDF endpoints (id-card, certificate, job-letter) generate full PDF synchronously inside the request handler — large institutes will see latency. Consider streaming response or pre-rendering.",
+    "Timetable slot upsert key is (class_id, weekday, period_index) — but teacher conflict (same teacher in 2 classes at same weekday+period) is not detected. Add a sanity check or warning.",
+    "Several PDF routes lack rate-limiting (already noted in iter2)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2b.py (created — 23 tests, all PASS)"
+  ],
+  "success_rate": {"backend": "100% (23/23)", "frontend": "100% (Timetable / Exams / Question Papers / Student-Employee docs / Parent Portal)"},
+  "test_credentials": "admin@school.com/admin123, teacher@school.com/teacher123, parent@school.com/parent123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Backend auto-seeds timetable config + ~30 slots for Grade 1, 1 Mid-Term Examination with 5 ExamSubjects, 1 sample question paper, demo parent linked to 2 students. Tests created and removed: 1 transient TEST-EXAM (admin can delete), 1 transient TEST-QP, 1 transient TEST-ROOM slot, 1 self-registered TEST_parent_*@x.com user (left behind — DB will accumulate). Teacher-created TEST-T-* exam was NOT deleted because teachers lack delete permission. Recommend periodic admin cleanup of TEST_ prefixed parent users and TEST-T-* exams.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Use /app/backend/tests/test_phase2b.py for Phase 2B regression alongside backend_test.py and test_phase2.py. NOTE the spec-vs-server mismatch for POST /api/exams (server requires start_date/end_date, NOT exam_date/exam_type). Slot upsert key = (class_id, weekday, period_index); slot doc uses 'classroom' not 'room'. Parent endpoints are role-gated — admin gets 403 on /api/parent/* by design. Teacher can create exams but cannot delete them (admin-only). PDF endpoints all return application/pdf with body[:4]==b'%PDF'. Frontend Parent Portal does not yet carry data-testid attributes.",
+  "rca of the issue": "N/A — no failing functionality. 4 initial test failures were script bugs (model field names + email lowercasing) and were fixed in the test file."
+}

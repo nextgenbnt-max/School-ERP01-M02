@@ -1,0 +1,41 @@
+{
+  "summary": "Phase 3 testing complete. Backend 25/26 (96%) — only flaky/broken endpoint is GET /api/payments/checkout/status/{session_id} returning 500 with sk_test_emergent (No such checkout.session). Frontend flows verified: Users CRUD, Behaviour ratings, Fees email (status=skipped), Salary email (status=skipped), Sidebar new entries (nav-behaviour, nav-users). Parent Stripe checkout API verified separately via backend (returns valid https://checkout.stripe.com URL).",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "GET /api/payments/checkout/status/{session_id}", "issue": "Returns 500. emergentintegrations raises CheckoutError: 'Failed to retrieve session status: No such checkout.session: cs_test_…'. A session created moments earlier with the same sk_test_emergent key cannot be looked up via get_checkout_status. Likely a key/proxy mismatch between create_checkout_session and get_checkout_status in emergentintegrations, OR session-creation and status-lookup are hitting different Stripe accounts. Parent UI polling after a Stripe redirect would 500.", "priority": "HIGH"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Parent pay button visibility", "issue": "When all parent invoices are already 'paid' (as happens after backend test pollution), no Pay button is rendered — by design but worth noting. The /api/parent/fees/invoices/checkout endpoint itself returns a valid checkout.stripe.com URL (verified in backend tests).", "affected_selectors": ["parent-pay-{id}"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase3.py",
+    "/app/test_reports/pytest/phase3_results.xml"
+  ],
+  "action_items": [
+    "Investigate why StripeCheckout.get_checkout_status() can't find a session that StripeCheckout.create_checkout_session() just returned (both use STRIPE_API_KEY=sk_test_emergent). Could be an emergentintegrations bug or the test-key proxy not persisting session lookups. This will break the parent's post-redirect ?session_id= polling in ParentDashboard."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now 2713 lines — past the 700-line guideline. Recommend splitting into routers (auth.py, parent.py, fees.py, salary.py, behaviour.py, payments.py, emails.py, users.py).",
+    "Resend send path uses asyncio.to_thread on resend.Emails.send — good; non-blocking. status='skipped' correctly bypasses real network calls.",
+    "Stripe webhook handler swallows all exceptions and returns {ok:false} with 200 — should return 4xx so Stripe retries on transient failures; logging is in place which is good.",
+    "_check_login_lockout uses sort=[('ts',-1)] but variable is named 'latest' — semantically 'latest' is the newest failure, so 'remaining' computation off the latest ts is fine. Counter clears on success per _record_login_attempt.",
+    "User update endpoint silently accepts any role string only when 'role' key is present (validated); fine but no audit log of admin role changes.",
+    "POST /api/users only enforces password min_length via Pydantic — Field(min_length=8). Good. PUT /api/users/{id} does not allow password change (must use /reset-password) — good separation."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase3.py (created)"
+  ],
+  "success_rate": {"backend": "96% (25/26)", "frontend": "100% of verifiable flows"},
+  "test_credentials": "admin@school.com/admin123, teacher@school.com/teacher123, parent@school.com/parent123",
+  "seed_data_creation": "Test created and deleted users with email prefix TEST_/test_ui_. Test marked one previously-unpaid parent invoice as paid (cash) as a side-effect to verify 400 on already-paid; this may reduce visible unpaid invoices on parent dashboard for subsequent runs.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend test file is at /app/backend/tests/test_phase3.py. Parent invoices live inside GET /api/parent/children/{id}/summary → fees.invoices (not /api/parent/fees/invoices). Email endpoints lowercase emails so use lowercase in assertions. Rate-limit test uses a throwaway email each run so it won't pollute admin accounts. The single failing backend test (TestStripe.test_get_checkout_status) is a real bug in the Stripe integration — main agent should investigate emergentintegrations checkout status retrieval.",
+  "rca of the issue": "Stripe status 500: When checkout creates session cs_test_… via sk_test_emergent, the session is stored locally in payment_transactions. On polling, sc.get_checkout_status(session_id) calls into emergentintegrations which then raises 'No such checkout.session' from Stripe. Either (a) emergentintegrations uses a different effective api key for status (test proxy creates real Stripe sessions but lookup hits Stripe with a different key/account) or (b) the test key cannot read its own sessions back. Mitigation: wrap sc.get_checkout_status in try/except and gracefully return cached payment_status ('initiated'/'unpaid') when Stripe lookup fails; or use the local payment_transactions record as source of truth and rely on the webhook for status updates."
+}

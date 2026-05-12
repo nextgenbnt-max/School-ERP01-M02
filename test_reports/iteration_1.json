@@ -1,0 +1,37 @@
+{
+  "summary": "Full backend + frontend regression of School Management System. Backend: 22/22 pytest tests passed including auth (login/wrong-pw/me/logout/cookies), dashboard stats, institute GET/PUT (role-enforced), classes CRUD with role enforcement (teacher 403 on DELETE, admin 200), subjects CRUD, students list/search/create with duplicate-reg 400, employees CRUD, fees list/bulk-generate/pay/report, attendance mark/get/report, and messaging send returning status=skipped when Twilio creds blank (no 500). Frontend: admin login -> dashboard KPI cards render, all 10 sidebar nav links work, Classes create works (toast 'Class created'), Students search + create work, Fees page KPI cards visible & generate-invoices dialog opens, Attendance student/employee tab switching + save button visible, Messaging send triggers 'skipped' toast, Reports fee/attendance tab switching works, Settings save institute works, Logout returns to login.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is 979 lines — consider splitting into routers/models modules per feature for maintainability (auth, students, fees, attendance, messages).",
+    "set_auth_cookies uses secure=False and samesite='lax'. For production over HTTPS this should be secure=True with samesite='none' (since FE and BE are different subdomains).",
+    "CORS_ORIGINS defaults to '*' but allow_credentials=True with wildcard origins is non-standard and rejected by some browsers. Recommend explicit origin list (current preview URL).",
+    "No rate limiting / brute-force lockout on /api/auth/login — playbook requirement.",
+    "JWT_SECRET committed in .env is fine for preview but should be rotated for production.",
+    "PUT endpoints for classes/subjects/students/employees use the same Pydantic IN model which forces all fields (data.model_dump()) — partial updates not supported and previously-set fields could be overwritten with defaults.",
+    "Fee invoice schema has no DB-level uniqueness on (student_id, month, year); bulk-generate avoids dupes but a direct POST to /api/fees/invoices does not check.",
+    "register endpoint is publicly accessible and lets anyone create users with any role (including admin) — privilege escalation risk."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (created)"
+  ],
+  "success_rate": {"backend": "100% (22/22)", "frontend": "100% (9/9 flows)"},
+  "test_credentials": "admin@school.com/admin123, teacher@school.com/teacher123",
+  "seed_data_creation": "Backend auto-seeds on startup. Test data created during run (TEST_/UI_TEST_ prefixes, 2099 fee invoices, 2099-01-15 attendance) was cleaned up after tests via mongosh.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Reuse /app/backend/tests/backend_test.py for regression. Seed data is idempotent. Cookies are httpOnly so requests.Session() must be used (no manual Bearer header needed). Twilio env intentionally blank — send returns status=skipped (not failed). Bulk-generate uses query params not JSON body.",
+  "rca of the issue": "N/A — no failing tests."
+}
